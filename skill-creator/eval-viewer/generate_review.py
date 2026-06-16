@@ -153,7 +153,7 @@ def embed_file(path: Path) -> dict:
 
     if ext in TEXT_EXTENSIONS:
         try:
-            content = path.read_text(errors="replace")
+            content = path.read_text(encoding='utf-8', errors="replace")
         except OSError:
             content = "(Error reading file)"
         return {
