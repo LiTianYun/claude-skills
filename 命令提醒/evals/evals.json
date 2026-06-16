@@ -1,0 +1,23 @@
+{
+  "skill_name": "命令提醒",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "帮我提交一下代码，改了几个功能模块，想分开提交",
+      "expected_output": "推荐使用 /git-commit-helper 技能，并解释该技能可以分析变更、按功能域分批提交",
+      "files": []
+    },
+    {
+      "id": 2,
+      "prompt": "这段代码写得不太好，帮我看看有没有隐藏的bug，顺便看看能不能优化简化一下",
+      "expected_output": "推荐使用 /code-review（找Bug）和 /simplify（优化简化）两个技能",
+      "files": []
+    },
+    {
+      "id": 3,
+      "prompt": "我不太确定用啥命令，就是代码改动挺多的想整理一下再push，还想看看有没有安全问题",
+      "expected_output": "推荐使用 /git-commit-helper（整理提交）和 /security-review（安全检查）",
+      "files": []
+    }
+  ]
+}
