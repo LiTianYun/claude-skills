@@ -16,6 +16,7 @@
 | **PPT 处理** (`pptx`) | 创建、编辑和分析 .pptx 演示文稿 |
 | **Excel 处理** (`xlsx`) | 创建、编辑和分析电子表格，支持公式、图表、数据可视化 |
 | **RA 编译验证** (`ra-build`) | RA MCU 工程编译验证，支持命令行一键构建 |
+| **嵌入式 AI 工具集** (`embed-ai-tool`) | 17 个嵌入式开发技能，覆盖 Keil/IAR/CMake 编译、J-Link/OpenOCD 烧录调试、CAN/Modbus/串口协议、静态分析/RTOS 调试等 MCU 固件开发全流程 |
 
 ## 目录结构
 
@@ -50,6 +51,24 @@
 │   └── recalc.py
 ├── ra-build/                   # RA MCU 编译验证
 │   └── SKILL.md
+├── build-keil/                  # Keil MDK 编译
+├── build-cmake/                 # CMake 构建
+├── build-makefile/              # Makefile 构建
+├── flash-keil/                  # Keil 烧录
+├── flash-jlink/                 # J-Link 烧录
+├── flash-openocd/               # OpenOCD 烧录
+├── debug-gdb-openocd/           # GDB + OpenOCD 调试
+├── debug-jlink/                 # J-Link 调试
+├── serial-monitor/              # 串口监视
+├── serial-shell/                # 串口 Shell
+├── can-debug/                   # CAN 总线调试
+├── modbus-debug/                # Modbus 协议调试
+├── static-analysis/             # 静态分析
+├── memory-analysis/             # 内存分析
+├── logic-analyzer/              # 逻辑分析仪
+├── rtos-debug/                  # RTOS 调试
+├── workflow/                    # 流水线编排
+├── shared/                      # 共享库
 ├── skill-creator/              # 技能创建器
 │   ├── SKILL.md
 │   ├── agents/                 # 评估子代理定义
@@ -72,6 +91,7 @@ Claude Code 会自动识别该目录下的技能。
 ## 来源说明
 
 - **Office 文档技能**（`docx`、`pdf`、`pptx`、`xlsx`）基于 [appautomaton/document-SKILLs](https://github.com/appautomaton/document-SKILLs) 改进，上游仓库以 MIT 许可证发布。
+- **嵌入式 AI 工具集**（`build-*`、`flash-*`、`debug-*` 等 17 个技能）来自 [LeoKemp223/embed-ai-tool](https://github.com/LeoKemp223/embed-ai-tool)，通过 `install.py` 脚本按需安装。
 
 ---
 
@@ -81,6 +101,7 @@ Claude Code 会自动识别该目录下的技能。
 
 ### 2026-07-08
 
+- **feat**: 新增 embed-ai-tool 嵌入式开发技能集（17 个技能 + 1 个共享库），覆盖 Keil/IAR/CMake 编译、烧录、调试、CAN/Modbus/串口协议等（`build-*`、`flash-*`、`debug-*` 等）
 - **feat**: 新增 Office 文档处理技能（`docx`、`pdf`、`pptx`、`xlsx`），基于 document-SKILLs 改进
 - **feat**: 新增 Draw.io 转 Mermaid 流程图技能（`drawio-to-mermaid`）
 - **fix**: 修正技能 name 字段为纯英文标识符（`cmd-nav`、`project-diff`）
