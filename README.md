@@ -10,6 +10,11 @@
 | **技能创建器** (`skill-creator`) | 创建、测试、评估和优化 Claude Code 技能 |
 | **工程变更比对** (`project-diff 工程变更比对`) | 智能对比两个代码工程，生成功能级变更报告 |
 | **命令提醒** (`cmd-nav 命令提醒`) | 用中文描述需求时自动推荐对应的内置技能 |
+| **Draw.io 转 Mermaid** (`drawio-to-mermaid`) | 将 draw.io 流程图文件转换为 Mermaid 语法 |
+| **Word 文档处理** (`docx`) | 创建、编辑和分析 .docx 文件，支持修订标记、批注等 |
+| **PDF 处理** (`pdf`) | 提取文本/表格、创建 PDF、合并/拆分文档、表单填写 |
+| **PPT 处理** (`pptx`) | 创建、编辑和分析 .pptx 演示文稿 |
+| **Excel 处理** (`xlsx`) | 创建、编辑和分析电子表格，支持公式、图表、数据可视化 |
 | **RA 编译验证** (`ra-build`) | RA MCU 工程编译验证，支持命令行一键构建 |
 
 ## 目录结构
@@ -27,6 +32,22 @@
 │   ├── SKILL.md
 │   ├── evals/
 │   └── scripts/
+├── drawio-to-mermaid/           # Draw.io 转 Mermaid
+│   └── SKILL.md
+├── docx/                        # Word 文档处理
+│   ├── SKILL.md
+│   ├── ooxml/
+│   └── scripts/
+├── pdf/                         # PDF 处理
+│   ├── SKILL.md
+│   └── scripts/
+├── pptx/                        # PPT 处理
+│   ├── SKILL.md
+│   ├── ooxml/
+│   └── scripts/
+├── xlsx/                        # Excel 处理
+│   ├── SKILL.md
+│   └── recalc.py
 ├── ra-build/                   # RA MCU 编译验证
 │   └── SKILL.md
 ├── skill-creator/              # 技能创建器
@@ -48,11 +69,21 @@ git clone https://github.com/LiTianYun/claude-skills.git ~/.claude/skills/
 
 Claude Code 会自动识别该目录下的技能。
 
+## 来源说明
+
+- **Office 文档技能**（`docx`、`pdf`、`pptx`、`xlsx`）基于 [appautomaton/document-SKILLs](https://github.com/appautomaton/document-SKILLs) 改进，上游仓库以 MIT 许可证发布。
+
 ---
 
 ## 变更日志
 
 <!-- 新条目添加在最上方 -->
+
+### 2026-07-08
+
+- **feat**: 新增 Office 文档处理技能（`docx`、`pdf`、`pptx`、`xlsx`），基于 document-SKILLs 改进
+- **feat**: 新增 Draw.io 转 Mermaid 流程图技能（`drawio-to-mermaid`）
+- **fix**: 修正技能 name 字段为纯英文标识符（`cmd-nav`、`project-diff`）
 
 ### 2026-06-18
 

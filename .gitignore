@@ -8,3 +8,6 @@ Thumbs.db
 # Python 缓存
 __pycache__/
 *.pyc
+
+# 上游仓库克隆（不作为子模块）
+document-skills/
