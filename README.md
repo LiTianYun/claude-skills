@@ -99,6 +99,10 @@ Claude Code 会自动识别该目录下的技能。
 
 <!-- 新条目添加在最上方 -->
 
+### 2026-07-10
+
+- **feat**: can-debug 新增 VCI/GCAN 国产 USB-CAN 适配器支持，兼容 GCAN/CX/ZLG 三种硬件（`can-debug`）
+
 ### 2026-07-08
 
 - **feat**: 新增 embed-ai-tool 嵌入式开发技能集（17 个技能 + 1 个共享库），覆盖 Keil/IAR/CMake 编译、烧录、调试、CAN/Modbus/串口协议等（`build-*`、`flash-*`、`debug-*` 等）
