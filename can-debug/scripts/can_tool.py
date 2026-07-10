@@ -41,6 +41,16 @@ except ImportError:
 KNOWN_INTERFACES = ["pcan", "kvaser", "slcan", "socketcan", "virtual",
                      "ixxat", "vector", "canalystii", "systec", "usb2can"]
 
+# 注册 VCI 后端（GCAN/ZLG/CX USBCAN 适配器）
+try:
+    import can.interfaces
+    from vci_adapter import VciBus
+    can.interfaces.BACKENDS["vci"] = ("vci_adapter", "VciBus")
+    KNOWN_INTERFACES.append("vci")
+    HAS_VCI = True
+except ImportError:
+    HAS_VCI = False
+
 
 @dataclass
 class CANResult:
@@ -57,9 +67,10 @@ class CANResult:
 # 连接管理
 # ---------------------------------------------------------------------------
 
-def create_bus(interface: str, channel: str, bitrate: int) -> Any:
+def create_bus(interface: str, channel: str, bitrate: int, **kwargs: Any) -> Any:
+    """创建 CAN 总线连接。VCI 接口额外支持 dll/dev_type/dev_index 参数。"""
     try:
-        bus = can.Bus(interface=interface, channel=channel, bitrate=bitrate)
+        bus = can.Bus(interface=interface, channel=channel, bitrate=bitrate, **kwargs)
         return bus, None
     except Exception as e:
         return None, str(e)
@@ -234,6 +245,10 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--scan-range", default="0x001-0x7FF", help="扫描 ID 范围（默认 0x001-0x7FF）")
     p.add_argument("--duration", type=float, default=10, help="监听持续秒数（默认 10，0=无限）")
     p.add_argument("--format", choices=["table", "raw", "json"], default="table", help="输出格式")
+    # VCI 专用参数 (GCAN/ZLG/CX) — DLL 必须匹配硬件品牌，不设默认值
+    p.add_argument("--dll", default=None, help="VCI: DLL 文件名 (必填: ControlCAN_GC/CX/ZLG.dll)")
+    p.add_argument("--dev-type", type=int, default=4, help="VCI: 设备类型 (默认 4=USBCAN_2)")
+    p.add_argument("--dev-index", type=int, default=0, help="VCI: 设备索引 (默认 0)")
     return p
 
 
@@ -245,12 +260,50 @@ def main() -> int:
         print("\n📊 CAN 调试环境探测：")
         if HAS_CAN:
             print(f"  ✅ python-can {CAN_VERSION}")
-            print(f"\n  已知接口类型:")
-            for iface in KNOWN_INTERFACES:
-                print(f"    - {iface}")
         else:
             print("  ❌ python-can 未安装（pip install python-can）")
-        return 0 if HAS_CAN else 1
+
+        print(f"\n  已知接口类型:")
+        for iface in KNOWN_INTERFACES:
+            marker = " (VCI/GCAN)" if iface == "vci" else ""
+            print(f"    - {iface}{marker}")
+
+        # 探测 VCI/GCAN 设备
+        if HAS_VCI:
+            print("\n  VCI 设备探测:")
+            print(f"    32-bit Python: ", end="")
+            try:
+                from vci_adapter import _find_32bit_python
+                py_cmd = _find_32bit_python()
+                print(f"✅ {' '.join(py_cmd)}")
+            except RuntimeError as e:
+                print(f"❌ {e}")
+                py_cmd = None
+
+            # 扫描设备：用所有可用的 DLL 各尝试一次
+            if py_cmd:
+                import subprocess as sp, os
+                bridge = os.path.join(os.path.dirname(os.path.abspath(__file__)), "can_bridge.py")
+                # 若用户未指定 DLL，尝试所有已知 DLL
+                dlls_to_try = [args.dll] if args.dll else [
+                    "ControlCAN_GC.dll", "ControlCAN_CX.dll", "ControlCAN_ZLG.dll"
+                ]
+                for dll_name in dlls_to_try:
+                    if dll_name is None:
+                        continue
+                    try:
+                        result = sp.run(
+                            py_cmd + [bridge, "find", "--dll", dll_name],
+                            capture_output=True, text=True, timeout=10,
+                        )
+                        if result.returncode == 0:
+                            print(f"    [{dll_name}] {result.stdout.strip()}")
+                        else:
+                            print(f"    [{dll_name}] (无设备或 DLL 不支持扫描)")
+                    except Exception as ex:
+                        print(f"    [{dll_name}] 扫描异常: {ex}")
+
+        return 0
 
     if not HAS_CAN:
         print("❌ python-can 未安装，请运行: pip install python-can")
@@ -260,8 +313,22 @@ def main() -> int:
         parser.print_help()
         return 1
 
+    # 构建连接参数
     conn_str = f"{args.interface} {args.channel} {args.bitrate}"
-    bus, err = create_bus(args.interface, args.channel, args.bitrate)
+    bus_kwargs = {}
+    if args.interface == "vci":
+        if not args.dll:
+            print("❌ VCI 接口必须指定 --dll 参数（DLL 必须匹配硬件品牌）")
+            print("   GCAN 硬件: --dll ControlCAN_GC.dll")
+            print("   创芯 硬件: --dll ControlCAN_CX.dll")
+            print("   ZLG  硬件: --dll ControlCAN_ZLG.dll")
+            return 1
+        bus_kwargs = {
+            "dll": args.dll,
+            "dev_type": args.dev_type,
+            "dev_index": args.dev_index,
+        }
+    bus, err = create_bus(args.interface, args.channel, args.bitrate, **bus_kwargs)
     if bus is None:
         print(f"❌ 连接失败: {conn_str}")
         if err:
