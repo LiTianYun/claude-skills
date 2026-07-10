@@ -87,6 +87,41 @@ def _gdbserver_candidates() -> list[str]:
     return candidates
 
 
+def validate_device_name(device: str) -> dict[str, Any]:
+    """验证设备名是否被 J-Link 识别。先搜 XML，再搜 DLL。"""
+    jlink_dir = None
+    gdbserver = find_gdbserver()
+    if gdbserver:
+        jlink_dir = str(Path(gdbserver).parent)
+
+    result: dict[str, Any] = {"device": device, "found_in": [], "recognized": False}
+
+    if jlink_dir:
+        # 1. 搜索 JLinkDevices.xml
+        xml_path = Path(jlink_dir) / "JLinkDevices.xml"
+        if xml_path.exists():
+            try:
+                content = xml_path.read_text(encoding="utf-8", errors="ignore")
+                if device in content:
+                    result["found_in"].append("JLinkDevices.xml")
+            except Exception:
+                pass
+
+        # 2. 搜索 DLL（部分 Renesas 设备不在 XML 而在 DLL 二进制中）
+        for dll_name in ["JLinkARM.dll", "JLink_x64.dll"]:
+            dll_path = Path(jlink_dir) / dll_name
+            if dll_path.exists():
+                try:
+                    raw = dll_path.read_bytes()
+                    if device.encode("ascii") in raw:
+                        result["found_in"].append(dll_name)
+                except Exception:
+                    pass
+
+    result["recognized"] = len(result["found_in"]) > 0
+    return result
+
+
 def find_gdbserver() -> str | None:
     for candidate in _gdbserver_candidates():
         path = shutil.which(candidate)
@@ -160,6 +195,26 @@ def wait_for_port(port: int, timeout: float = 10) -> bool:
     return False
 
 
+def kill_residual_gdbserver() -> None:
+    """清理残留的 JLinkGDBServer 进程（上次异常退出可能未关闭）。"""
+    if platform.system() == "Windows":
+        try:
+            subprocess.run(
+                ["taskkill", "/f", "/im", "JLinkGDBServerCL.exe"],
+                capture_output=True, timeout=5,
+            )
+        except Exception:
+            pass
+    else:
+        try:
+            subprocess.run(
+                ["pkill", "-f", "JLinkGDBServerCLExe"],
+                capture_output=True, timeout=5,
+            )
+        except Exception:
+            pass
+
+
 def start_gdbserver(
     gdbserver: str,
     device: str,
@@ -168,6 +223,8 @@ def start_gdbserver(
     port: int,
     swo: bool,
 ) -> tuple[subprocess.Popen | None, str]:
+    # ★ 不用 -singlerun：wait_for_port 的 TCP 探活会消耗唯一会话配额，
+    #    导致后续 GDB 连接被拒（error 138）。脚本自行清理进程。
     cmd = [
         gdbserver,
         "-device", device,
@@ -175,13 +232,16 @@ def start_gdbserver(
         "-speed", str(speed),
         "-port", str(port),
         "-nogui",
-        "-singlerun",
     ]
     if swo:
         cmd.extend(["-swoport", str(port + 1)])
 
     cmd_str = " ".join(cmd)
     print(f"🔧 启动 JLinkGDBServer: {cmd_str}")
+
+    # 清理上次可能残留的僵尸进程，避免端口冲突
+    kill_residual_gdbserver()
+    time.sleep(0.5)
 
     try:
         proc = subprocess.Popen(
@@ -217,7 +277,9 @@ def generate_gdb_script(mode: str, elf_path: str, gdb_port: int) -> str:
     elf_posix = elf_path.replace("\\", "/")
     lines: list[str] = [
         f"file {elf_posix}",
-        f"target extended-remote localhost:{gdb_port}",
+        # 使用 127.0.0.1 而非 localhost：GDB batch 模式下 localhost 在 Windows
+        # 上可能触发 error 138（路径合并错误），127.0.0.1 不受影响。
+        f"target extended-remote 127.0.0.1:{gdb_port}",
     ]
 
     if mode == "download-and-halt":
@@ -257,11 +319,11 @@ def run_gdb(
     script_content: str,
     verbose: bool,
 ) -> tuple[bool, list[str], list[str]]:
-    with tempfile.NamedTemporaryFile(
-        mode="w", suffix=".gdb", delete=False, encoding="utf-8",
-    ) as f:
+    # ★ 不用 NamedTemporaryFile：Windows 系统 Temp 目录可能触发 GDB error 138。
+    # 直接写到 CWD，与手动 `-x /tmp/foo.gdb` 成功的模式一致。
+    script_path = str(Path("_jlink_debug.gdb").resolve())
+    with open(script_path, "w", newline="\n", encoding="ascii") as f:
         f.write(script_content)
-        script_path = f.name
 
     cmd = [gdb_path, "--batch", "-x", script_path]
     cmd_str = " ".join(cmd)
@@ -411,6 +473,14 @@ def main() -> int:
         print("❌ J-Link 调试需要 --device 参数（如 STM32F407VG）。")
         return 1
 
+    # 验证设备名（先 XML 后 DLL，Renesas 等设备可能仅在 DLL 中定义）
+    dev_info = validate_device_name(args.device)
+    if dev_info["recognized"]:
+        sources = " + ".join(dev_info["found_in"])
+        print(f"✅ 设备 \"{args.device}\" 在 {sources} 中找到")
+    else:
+        print(f"⚠️ 设备 \"{args.device}\" 未在 JLinkDevices.xml 或 DLL 中找到，仍将尝试连接")
+
     elf_path = str(Path(args.elf).resolve())
     if not Path(elf_path).exists():
         print(f"❌ ELF 文件不存在: {elf_path}")
@@ -485,6 +555,8 @@ def main() -> int:
             proc.wait(timeout=5)
         except subprocess.TimeoutExpired:
             proc.kill()
+        # 双重保险：kill_residual 确保无僵尸进程残留
+        kill_residual_gdbserver()
         print("🔌 JLinkGDBServer 已关闭")
 
 

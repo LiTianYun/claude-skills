@@ -73,3 +73,29 @@ python3 skills/debug-jlink/scripts/jlink_debugger.py \
 
 - `0`：调试会话成功完成
 - `1`：参数非法、依赖缺失、连接失败、调试失败
+
+## 故障排除
+
+### GDB 连接 error 138 (Windows)
+
+**现象**：JLinkGDBServer 启动成功，GDB 连接时报 `could not connect (error 138)`。
+
+**原因**：GDB batch 模式下 `localhost` 在 Windows 上可能触发路径合并错误。
+
+**解决**：脚本已默认使用 `127.0.0.1` 替代 `localhost`。若手动编写 GDB 脚本，同理替换。
+
+### 设备名在 JLinkDevices.xml 中找不到
+
+**现象**：`grep` 搜索 `JLinkDevices.xml` 找不到目标设备名（如 `R7FA2L1AB`）。
+
+**原因**：部分 Renesas 等厂商的设备定义在 `JLinkARM.dll` 二进制中，不在 XML 数据库。
+
+**解决**：脚本在启动调试前会自动搜索 XML + DLL 双源验证设备名。若仅在 DLL 中找到，会打印提示信息后正常连接。
+
+### JLinkGDBServer 启动超时 / 端口冲突
+
+**现象**：`JLinkGDBServer 启动超时，GDB 端口未就绪`。
+
+**原因**：上次异常退出（如 Ctrl+C）后 JLinkGDBServer 进程未清理，端口 2331 仍被占用。
+
+**解决**：脚本在启动前和结束后均自动执行 `taskkill`（Windows）或 `pkill`（Linux）清理僵尸进程。
