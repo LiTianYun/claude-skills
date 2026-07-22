@@ -1,0 +1,31 @@
+{
+  "tools": {
+    "jlink": "C:\\Program Files\\SEGGER\\JLink\\JLink.exe"
+  },
+  "project_profile": {
+    "artifact_path": "C:\\Users\\L\\.agents\\skills\\bmu-debug\\RA_BMU-L3752-2_V1.1.5_low.hex",
+    "artifact_kind": "hex",
+    "probe": "jlink",
+    "target_mcu": "R7FA2L1AB",
+    "jlink_device": "R7FA2L1AB",
+    "jlink_interface": "SWD",
+    "jlink_speed": 4000,
+    "jlink_path": "C:\\Program Files\\SEGGER\\JLink\\JLink.exe",
+    "workspace_root": "C:\\Users\\L\\.agents\\skills\\bmu-debug",
+    "updated_at": "2026-07-22T02:24:32.386742+00:00"
+  },
+  "skill_profiles": {
+    "flash-jlink": {
+      "default": {
+        "artifact": "C:\\Users\\L\\.agents\\skills\\bmu-debug\\RA_BMU-L3752-2_V1.1.5_low.hex",
+        "artifact_kind": "hex",
+        "device": "R7FA2L1AB",
+        "interface": "SWD",
+        "speed": 4000,
+        "base_address": null,
+        "jlink_path": "C:\\Program Files\\SEGGER\\JLink\\JLink.exe",
+        "updated_at": "2026-07-22T02:24:32.387700+00:00"
+      }
+    }
+  }
+}
