@@ -15,7 +15,6 @@
 | **PDF 处理** (`pdf`) | 提取文本/表格、创建 PDF、合并/拆分文档、表单填写 |
 | **PPT 处理** (`pptx`) | 创建、编辑和分析 .pptx 演示文稿 |
 | **Excel 处理** (`xlsx`) | 创建、编辑和分析电子表格，支持公式、图表、数据可视化 |
-| **RA 编译验证** (`ra-build`) | RA MCU 工程编译验证，支持命令行一键构建 |
 | **嵌入式 AI 工具集** (`embed-ai-tool`) | 17 个嵌入式开发技能，覆盖 Keil/IAR/CMake 编译、J-Link/OpenOCD 烧录调试、CAN/Modbus/串口协议、静态分析/RTOS 调试等 MCU 固件开发全流程 |
 
 ## 目录结构
@@ -49,8 +48,6 @@
 ├── xlsx/                        # Excel 处理
 │   ├── SKILL.md
 │   └── recalc.py
-├── ra-build/                   # RA MCU 编译验证
-│   └── SKILL.md
 ├── build-keil/                  # Keil MDK 编译
 ├── build-cmake/                 # CMake 构建
 ├── build-makefile/              # Makefile 构建
@@ -112,7 +109,6 @@ Claude Code 会自动识别该目录下的技能。
 
 ### 2026-06-18
 
-- **feat**: 新增 RA MCU 编译验证技能，支持 e² studio 工程命令行一键构建（`ra-build`）
 - **refactor**: 技能目录重命名为中英双语格式，提升 CLI 输入体验（`cmd-nav 命令提醒`、`project-diff 工程变更比对`）
 
 ### 2026-06-17
