@@ -98,6 +98,9 @@ Claude Code 会自动识别该目录下的技能。
 
 ### 2026-08-04
 
+- **refactor**: build-cmake 改用 Build_Tool 驱动构建，移除自带 cmake_builder 脚本（`build-cmake`、`flash-openocd`）
+- **feat**: 新增多语言代码审查技能（`code-review-skill`）
+- **docs**: git-commit-helper 明确非功能变更合并提交规则（`git-commit-helper`）
 - **chore**: 移除 21 个未使用的 Azure 云技能（`azure-*`）
 
 ### 2026-07-10

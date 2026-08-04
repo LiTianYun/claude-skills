@@ -9,5 +9,8 @@ Thumbs.db
 __pycache__/
 *.pyc
 
+# BMU 调试运行时日志
+bmu-debug/scripts/*.csv
+
 # 上游仓库克隆（不作为子模块）
 document-skills/
