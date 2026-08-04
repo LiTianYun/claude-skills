@@ -96,6 +96,10 @@ Claude Code 会自动识别该目录下的技能。
 
 <!-- 新条目添加在最上方 -->
 
+### 2026-08-04
+
+- **chore**: 移除 21 个未使用的 Azure 云技能（`azure-*`）
+
 ### 2026-07-10
 
 - **feat**: can-debug 新增 VCI/GCAN 国产 USB-CAN 适配器支持，兼容 GCAN/CX/ZLG 三种硬件（`can-debug`）
