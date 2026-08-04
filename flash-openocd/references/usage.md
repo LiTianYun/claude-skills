@@ -156,7 +156,7 @@ NRST     →  NRST (可选，用于硬件复位)
 
 ```bash
 # 1. 编译
-python3 skills/build-cmake/scripts/cmake_builder.py --project /path/to/project
+Build_Tool --json -p /path/to/project
 
 # 2. 烧录
 python3 skills/flash-openocd/scripts/openocd_flasher.py \
